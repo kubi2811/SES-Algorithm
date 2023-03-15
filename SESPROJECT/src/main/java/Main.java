@@ -8,6 +8,7 @@ public class Main {
             FileInputStream in = new FileInputStream("C:/Users/hieut/Desktop/HTPT/SES-Algorithm/SESPROJECT/src/main/java/config.properties");
             props.load(in);
             in.close();
+
             int port = Integer.parseInt(props.getProperty("port"));
             int numClients = Integer.parseInt(props.getProperty("numClients"));
 
