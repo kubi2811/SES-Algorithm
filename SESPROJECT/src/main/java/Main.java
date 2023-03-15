@@ -5,7 +5,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             Properties props = new Properties();
-            FileInputStream in = new FileInputStream("C:/Users/hieut/Desktop/HTPT/SES-Algorithm/SESPROJECT/src/main/java/config.properties");
+            FileInputStream in = new FileInputStream("D:/SES-Algorithm/SES-Algorithm/SESPROJECT/src/main/java/config.properties");
             props.load(in);
             in.close();
             int port = Integer.parseInt(props.getProperty("port"));
@@ -22,7 +22,7 @@ public class Main {
                 Thread t2 = new Thread(clientSocket);
                 t2.start();
             }
-        } catch (Exception e) {
+        } catch (Exception e) { 
             e.printStackTrace();
         }
     }
