@@ -2,6 +2,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 
 public class SchiperEggliSandoz_main {
@@ -10,32 +11,44 @@ public class SchiperEggliSandoz_main {
      * @param args
      */
     public static void main(String[] args) {
-        int numProcesses = 3;
-        Thread[] myThreads = new Thread[numProcesses];
+        int numProcesses = 7;
+        Thread[][] myThreads = new Thread[numProcesses][6];
         try {
             // Create Registry
             Registry registry = LocateRegistry.createRegistry(1099);
-            String[] messageSend = new String[150];
-            for (int i = 1; i <= 150; i++) {
-                String message = "message".concat(String.valueOf(i));
-                messageSend[i] = message;
+
+
+            int[][] destIDs = {{1,2,3,4,5,6},{0,2,3,4,5,6},{0,1,3,4,5,6},{0,1,2,4,5,6},{0,1,2,3,5,6},{0,1,2,3,4,6},{0,1,2,3,4,5}};
+//            int[][] destIDs = {{1,2,3,4,5},{0,2,3,4,5},{0,1,3,4,5},{0,1,2,4,5},{0,1,2,3,5},{0,1,2,3,4}};
+            String[][] messages = new String[6][150];
+            for (int i = 0; i < messages.length; i++) {
+                for (int j = 0; j < messages[i].length; j++) {
+                    messages[i][j] = "message" + (j+1);
+                }
             }
-
-
-
-
-            int[][] destIDs = {{1, 2}, {}, {1}};
-            String[][] messages = {{"1", "2"}, {}, {"3"}};
-            int[][] delays = {{5000, 0}, {}, {500}};
+            int[][] delays = new int[6][150];
+            Random rand = new Random();
+            for (int i = 0; i < 6; i++) {
+                for (int j = 0; j < 150; j++) {
+                    delays[i][j] = rand.nextInt(5000);
+                }
+            }
 
             for (int i = 0; i < numProcesses; i++) {
                 SchiperEggliSandoz process = new SchiperEggliSandoz(i, numProcesses);
-                MyProcess p = new MyProcess(process, destIDs[i], messages[i], delays[i]);
-                myThreads[i] = new Thread(p);
+                for (int j = 0; j < 6; j++) {
+                    int destID = destIDs[i][j];
+                    MyProcess p = new MyProcess(process, new int[] { destID }, messages, delays);
+                    myThreads[i][j] = new Thread(p);
+                }
             }
+
             for (int i = 0; i < numProcesses; i++) {
-                myThreads[i].start();
+                for (int j = 0; j < 6; j++) {
+                    myThreads[i][j].start();
+                }
             }
+
 
         } catch (Exception e) {
             System.err.println("Could not create registry exception: " + e.toString());
@@ -48,11 +61,11 @@ public class SchiperEggliSandoz_main {
 
 class MyProcess implements Runnable {
     int[] destIDs;
-    String[] messages;
+    String[][] messages;
     SchiperEggliSandoz process;
-    int[] delays;
+    int[][] delays;
 
-    public MyProcess(SchiperEggliSandoz process, int[] destIDs, String[] messages, int[] delays) {
+    public MyProcess(SchiperEggliSandoz process, int[] destIDs, String[][] messages, int[][] delays) {
         this.messages = messages;
         this.destIDs = destIDs;
         this.process = process;
@@ -62,9 +75,10 @@ class MyProcess implements Runnable {
     public void run() {
         for (int i = 0; i < destIDs.length; i++) {
             try {
-                if (process.pid == 2)
-                    Thread.sleep(1000);
-                process.send(destIDs[i], "SchiperEggliSandoz", messages[i], delays[i]);
+                for(int j = 0; j < messages[i].length; j ++ ){
+                    process.send(destIDs[i], "SchiperEggliSandoz", messages[i][j], delays[i][j]);
+                }
+
             } catch (Exception e) {
                 System.err.println("Client exception: " + e.toString());
                 e.printStackTrace();
