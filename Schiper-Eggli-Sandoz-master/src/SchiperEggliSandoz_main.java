@@ -1,7 +1,10 @@
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 
 
@@ -11,32 +14,44 @@ public class SchiperEggliSandoz_main {
      * @param args
      */
     public static void main(String[] args) {
-        int numProcesses = 7;
-        Thread[][] myThreads = new Thread[numProcesses][6];
+        Properties properties = new Properties();
+
+        try {
+            FileInputStream file = new FileInputStream(args[0]);
+            properties.load(file);
+            file.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        int numProcesses = Integer.valueOf(properties.getProperty("numProcess"));
+        int numThread = Integer.valueOf(properties.getProperty("numThread"));
+        int numMessages = Integer.valueOf(properties.getProperty("numMessage"));
+        int numPort = Integer.valueOf(properties.getProperty("numPort"));
+        Thread[][] myThreads = new Thread[numProcesses][numThread];
         try {
             // Create Registry
-            Registry registry = LocateRegistry.createRegistry(1099);
+            Registry registry = LocateRegistry.createRegistry(numPort);
 
 
             int[][] destIDs = {{1,2,3,4,5,6},{0,2,3,4,5,6},{0,1,3,4,5,6},{0,1,2,4,5,6},{0,1,2,3,5,6},{0,1,2,3,4,6},{0,1,2,3,4,5}};
-//            int[][] destIDs = {{1,2,3,4,5},{0,2,3,4,5},{0,1,3,4,5},{0,1,2,4,5},{0,1,2,3,5},{0,1,2,3,4}};
-            String[][] messages = new String[6][150];
+            String[][] messages = new String[numThread][numMessages];
             for (int i = 0; i < messages.length; i++) {
                 for (int j = 0; j < messages[i].length; j++) {
                     messages[i][j] = "message" + (j+1);
                 }
             }
-            int[][] delays = new int[6][150];
+            int[][] delays = new int[numThread][numMessages];
             Random rand = new Random();
-            for (int i = 0; i < 6; i++) {
-                for (int j = 0; j < 150; j++) {
+            for (int i = 0; i < numThread; i++) {
+                for (int j = 0; j < numMessages; j++) {
                     delays[i][j] = rand.nextInt(5000);
                 }
             }
 
             for (int i = 0; i < numProcesses; i++) {
                 SchiperEggliSandoz process = new SchiperEggliSandoz(i, numProcesses);
-                for (int j = 0; j < 6; j++) {
+                for (int j = 0; j < numThread; j++) {
                     int destID = destIDs[i][j];
                     MyProcess p = new MyProcess(process, new int[] { destID }, messages, delays);
                     myThreads[i][j] = new Thread(p);
@@ -44,7 +59,7 @@ public class SchiperEggliSandoz_main {
             }
 
             for (int i = 0; i < numProcesses; i++) {
-                for (int j = 0; j < 6; j++) {
+                for (int j = 0; j < numThread; j++) {
                     myThreads[i][j].start();
                 }
             }
