@@ -7,21 +7,20 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SchiperEggliSandoz extends UnicastRemoteObject implements SchiperEggliSandoz_RMI{
+public class SES_Algorithm extends UnicastRemoteObject implements SES_RMI {
 
     private List<Message> messageBuffer;
-    private List<S> sBuffer;
+    private List<BufferModel> bufferModelBuffer;
     private int[] timeStamp;
     public int pid;
 
-    public SchiperEggliSandoz(int pid, int numProcesses) throws RemoteException {
+    public SES_Algorithm(int pid, int numProcesses) throws RemoteException {
         super();
         messageBuffer = new LinkedList<Message>();
-        sBuffer = new ArrayList<S>();
+        bufferModelBuffer = new ArrayList<BufferModel>();
         timeStamp = new int[numProcesses];
         this.pid = pid;
 
@@ -43,11 +42,11 @@ public class SchiperEggliSandoz extends UnicastRemoteObject implements SchiperEg
      */
     public synchronized void receive(Message m)
     {
-    	if (SBuffer.deliveryCondition(m.getsBuffer(), new S(pid, timeStamp))) {
+    	if (Buffer.deliveryCondition(m.getsBuffer(), new BufferModel(pid, timeStamp))) {
     	    deliver(m);
     	    checkBuffer();
     	} else {
-    		println("Current Vector Clock: " + VectorClock.toString(this.timeStamp));
+    		println("Current Vector Clock: " + Clock.toString(this.timeStamp));
     		println("Buffering message: " + m.toString());
     	    messageBuffer.add(m);
     	}
@@ -55,11 +54,11 @@ public class SchiperEggliSandoz extends UnicastRemoteObject implements SchiperEg
 
     public synchronized void send(int destinationID, String destination, String message) throws MalformedURLException, RemoteException, NotBoundException {
 
-        SchiperEggliSandoz_RMI dest = (SchiperEggliSandoz_RMI) Naming.lookup(destination + "-" + destinationID);
+        SES_RMI dest = (SES_RMI) Naming.lookup(destination + "-" + destinationID);
 
         timeStamp[pid]++;
-        List<S> copy = new ArrayList<S>();
-        for(S element : sBuffer) {
+        List<BufferModel> copy = new ArrayList<BufferModel>();
+        for(BufferModel element : bufferModelBuffer) {
             copy.add(element.clone());
         }
         
@@ -82,17 +81,17 @@ public class SchiperEggliSandoz extends UnicastRemoteObject implements SchiperEg
                 wait
         );
         
-        SBuffer.insert(sBuffer, new S(destinationID, Arrays.copyOf(timeStamp, timeStamp.length)));
+        Buffer.insert(bufferModelBuffer, new BufferModel(destinationID, Arrays.copyOf(timeStamp, timeStamp.length)));
     }
     
     public synchronized void send(int destinationID, String destination, String message, int delay) throws MalformedURLException, RemoteException, NotBoundException {
 
-        SchiperEggliSandoz_RMI dest = (SchiperEggliSandoz_RMI) Naming.lookup(destination + "-" + destinationID);
+        SES_RMI dest = (SES_RMI) Naming.lookup(destination + "-" + destinationID);
 
         // New operation
         timeStamp[pid]++;
-        List<S> copy = new ArrayList<S>();
-        for(S element : sBuffer) {
+        List<BufferModel> copy = new ArrayList<BufferModel>();
+        for(BufferModel element : bufferModelBuffer) {
             copy.add(element.clone());
         }
         
@@ -114,7 +113,7 @@ public class SchiperEggliSandoz extends UnicastRemoteObject implements SchiperEg
                 delay
         );
                
-        SBuffer.insert(sBuffer, new S(destinationID, Arrays.copyOf(timeStamp, timeStamp.length)));
+        Buffer.insert(bufferModelBuffer, new BufferModel(destinationID, Arrays.copyOf(timeStamp, timeStamp.length)));
     }
 
     /**
@@ -123,7 +122,7 @@ public class SchiperEggliSandoz extends UnicastRemoteObject implements SchiperEg
     private synchronized void checkBuffer() {
         for(int i = 0; i < messageBuffer.size(); i++) {
             Message m = messageBuffer.get(i);
-            if (SBuffer.deliveryCondition(m.getsBuffer(), new S(pid, timeStamp))) {
+            if (Buffer.deliveryCondition(m.getsBuffer(), new BufferModel(pid, timeStamp))) {
                 deliver(m);
                 messageBuffer.remove(i);
                 checkBuffer();
@@ -134,10 +133,10 @@ public class SchiperEggliSandoz extends UnicastRemoteObject implements SchiperEg
 
     private synchronized void deliver(Message m) {
     	// Update knowledge of what should have occurred
-        sBuffer = SBuffer.merge(sBuffer, m.getsBuffer());
+        bufferModelBuffer = Buffer.merge(bufferModelBuffer, m.getsBuffer());
         println("Delivering - " + m.toString());
         // Merge Vector Clocks
-        this.timeStamp = VectorClock.max(this.timeStamp, m.getTimeStamp());
+        this.timeStamp = Clock.max(this.timeStamp, m.getTimeStamp());
 
         // Increment clock for current process
         this.timeStamp[pid]++;

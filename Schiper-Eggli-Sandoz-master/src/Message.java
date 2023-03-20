@@ -1,16 +1,15 @@
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.List;
 
 public class Message implements Serializable{
 
     private String message;
-    private List<S> sBuffer;
+    private List<BufferModel> bufferModelBuffer;
     private int[] timeStamp;
     
-    public Message(String message, List<S> sBuffer, int[] timeStamp){
+    public Message(String message, List<BufferModel> bufferModelBuffer, int[] timeStamp){
         this.message = message;
-        this.sBuffer = sBuffer;
+        this.bufferModelBuffer = bufferModelBuffer;
         this.timeStamp = timeStamp;
     }
 
@@ -22,12 +21,12 @@ public class Message implements Serializable{
         this.message = message;
     }
 
-    public List<S> getsBuffer() {
-        return sBuffer;
+    public List<BufferModel> getsBuffer() {
+        return bufferModelBuffer;
     }
 
-    public void setsBuffer(List<S> sBuffer) {
-        this.sBuffer = sBuffer;
+    public void setsBuffer(List<BufferModel> bufferModelBuffer) {
+        this.bufferModelBuffer = bufferModelBuffer;
     }
 
     public int[] getTimeStamp() {
@@ -40,7 +39,7 @@ public class Message implements Serializable{
     
     public String toString()
     {
-    	return "Message: " +  message + "\tsBuffer: " + SBuffer.toString(sBuffer) + "\tTimeStamp: " + VectorClock.toString(timeStamp);
+    	return "Message: " +  message + "\tsBuffer: " + Buffer.toString(bufferModelBuffer) + "\tTimeStamp: " + Clock.toString(timeStamp);
     }
     
     

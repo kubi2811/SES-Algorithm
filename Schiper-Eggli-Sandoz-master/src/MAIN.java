@@ -2,13 +2,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
 
-public class SchiperEggliSandoz_main {
+public class MAIN {
 
     /**
      * @param args
@@ -50,7 +48,7 @@ public class SchiperEggliSandoz_main {
             }
 
             for (int i = 0; i < numProcesses; i++) {
-                SchiperEggliSandoz process = new SchiperEggliSandoz(i, numProcesses);
+                SES_Algorithm process = new SES_Algorithm(i, numProcesses);
                 for (int j = 0; j < numThread; j++) {
                     int destID = destIDs[i][j];
                     MyProcess p = new MyProcess(process, new int[] { destID }, messages, delays);
@@ -77,10 +75,10 @@ public class SchiperEggliSandoz_main {
 class MyProcess implements Runnable {
     int[] destIDs;
     String[][] messages;
-    SchiperEggliSandoz process;
+    SES_Algorithm process;
     int[][] delays;
 
-    public MyProcess(SchiperEggliSandoz process, int[] destIDs, String[][] messages, int[][] delays) {
+    public MyProcess(SES_Algorithm process, int[] destIDs, String[][] messages, int[][] delays) {
         this.messages = messages;
         this.destIDs = destIDs;
         this.process = process;

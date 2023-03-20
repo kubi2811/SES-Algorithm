@@ -1,22 +1,22 @@
 import java.io.Serializable;
 import java.util.Arrays;
 
-public class S implements Serializable{
+public class BufferModel implements Serializable{
 
 	int pid;
 	int[] timeStamp;
 	
-	public S(int pid, int[] timeStamp)
+	public BufferModel(int pid, int[] timeStamp)
 	{
 		this.pid = pid;
 		this.timeStamp = timeStamp;
 	}
 	
-	public S clone()
+	public BufferModel clone()
 	{
-	    S newS = new S(this.pid, Arrays.copyOf(this.timeStamp, this.timeStamp.length));
+	    BufferModel newBufferModel = new BufferModel(this.pid, Arrays.copyOf(this.timeStamp, this.timeStamp.length));
 	    
-	    return newS;
+	    return newBufferModel;
 	}
 	
 	public int[] getTimeStamp()
@@ -41,6 +41,6 @@ public class S implements Serializable{
 	
 	public String toString()
 	{
-		return "(" + pid + ", " + VectorClock.toString(timeStamp) + ")";
+		return "(" + pid + ", " + Clock.toString(timeStamp) + ")";
 	}
 }
